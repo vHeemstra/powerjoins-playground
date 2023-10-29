@@ -91,9 +91,25 @@ Since `MorphTo` extends the `BelongsTo` relation, the column name is retreived b
        and `order_items`.`deleted_at` is null
        and `order_items`.`` is null
    */
+
+   $p->get();
+   /* Throws the error:
+    Illuminate\Database\QueryException  SQLSTATE[42S22]: Column not found: 1054 Unknown column 'order_items.' in 'on clause'
+    (Connection: mysql, SQL:
+     select `order_items`.*
+     from `order_items`
+     inner join `products`
+       on `order_items`.`orderable_id` = `products`.`id`
+       and `order_items`.`orderable_type` = App\Models\Product
+       and `order_items`.`deleted_at` is null
+       and `order_items`.`` is null
+     where `order_items`.`deleted_at` is null
+    ).
+   */
    ```
 
 So while adding this check and correct column name return fixes the deprecation warning, the strange default WHERE clause is now left in the query builder.
 
 The previous wrong column name would match this strange WHERE clause and have it removed I believe (see `Mixins\RelationshipsExtraMethods::shouldNotApplyExtraCondition()` called by `Mixins\RelationshipsExtraMethods::applyExtraConditions()`).
 
+**Possible other bug** I believe the `and order_items.deleted_at is null` statement in the `ON` clause should in fact be about the `JOIN`ed morphable model instead, and thus be `and products.deleted_at is null` in this case (since both models use soft-deletes and deleted Products are now still retreived).
