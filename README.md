@@ -13,7 +13,7 @@
 7) Type:
    ```php
    use App\Models\OrderItem;
-   OrderItem::orderable()->getBaseQuery()->wheres;
+   OrderItem::getModel()->orderable()->getBaseQuery()->wheres;
    ```
 8) Expected ouput:
    ```
