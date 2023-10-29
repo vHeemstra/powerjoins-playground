@@ -65,4 +65,35 @@ Since `MorphTo` extends the `BelongsTo` relation, the column name is retreived b
    OrderItem::getModel()->orderable()->getQualifiedOwnerKeyName();
    // Returns: "order_items."
    ```
+2) Add the following check at the top of the return function inside `Kirschbaum\PowerJoins\Mixins\RelationshipsExtraMethods::getPowerJoinExistenceCompareKey()`:
+   ```php
+   if ($this instanceof MorphTo) {
+     return [
+       $this->getModel()->qualifyColumn($this->getMorphType()),
+       $this->getQualifiedForeignKeyName()
+     ];
+   }
+   ```
+3) Re-open Artisan Tinker and run:
+   ```php
+   use App\Models\OrderItem;
+
+   $p = OrderItem::joinRelationship('orderable', morphable: \App\Models\Product::class);
+   // Note: no deprectation warning
+   
+   $p->getQuery()->toSQL();
+   /* Return SQL statement that includes the strange WHERE clause:
+     select `order_items`.*
+     from `order_items`
+     inner join `products`
+       on `order_items`.`orderable_id` = `products`.`id`
+       and `order_items`.`orderable_type` = ?
+       and `order_items`.`deleted_at` is null
+       and `order_items`.`` is null
+   */
+   ```
+
+So while adding this check and correct column name return fixes the deprecation warning, the strange default WHERE clause is now left in the query builder.
+
+The previous wrong column name would match this strange WHERE clause and have it removed I believe (see `Mixins\RelationshipsExtraMethods::shouldNotApplyExtraCondition()` called by `Mixins\RelationshipsExtraMethods::applyExtraConditions()`).
 
