@@ -112,4 +112,5 @@ So while adding this check and correct column name return fixes the deprecation 
 
 The previous wrong column name would match this strange WHERE clause and have it removed I believe (see `Mixins\RelationshipsExtraMethods::shouldNotApplyExtraCondition()` called by `Mixins\RelationshipsExtraMethods::applyExtraConditions()`).
 
-**Possible other bug** I believe the `and order_items.deleted_at is null` statement in the `ON` clause should in fact be about the `JOIN`ed morphable model instead, and thus be `and products.deleted_at is null` in this case (since both models use soft-deletes and deleted Products are now still retreived).
+#### 4. Possible other bug
+I believe the `and order_items.deleted_at is null` statement in the `ON` clause should in fact be about the `JOIN`ed morphable model instead, and thus be `and products.deleted_at is null` in this case (since both models use soft-deletes and deleted Products are now still retreived).
